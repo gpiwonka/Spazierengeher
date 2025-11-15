@@ -16,6 +16,7 @@ public class BlazorStepCounterService
     private int _initialStepsToday;
     private UserSettings _settings;
     private Timer _autoSaveTimer;
+    private readonly Task _initializationTask;
 
     public event EventHandler<int> OnStepCountChanged;
 
@@ -30,7 +31,7 @@ public class BlazorStepCounterService
         _stepCounterService.StepCountChanged += HandleStepCountChanged;
 
         // Initialisierung - lädt Einstellungen und heutige Schritte
-        _ = InitializeAsync();
+        _initializationTask = InitializeAsync();
     }
 
     private async Task InitializeAsync()
@@ -40,8 +41,10 @@ public class BlazorStepCounterService
         _currentSteps = _initialStepsToday;
     }
 
-    private void HandleStepCountChanged(object sender, int stepCount)
+    private async void HandleStepCountChanged(object sender, int stepCount)
     {
+        await _initializationTask;
+
         // Kombiniere neue Schritte mit bereits gespeicherten
         _currentSteps = _initialStepsToday + stepCount;
 
@@ -49,10 +52,10 @@ public class BlazorStepCounterService
         MainThread.BeginInvokeOnMainThread(() =>
         {
             OnStepCountChanged?.Invoke(this, _currentSteps);
-
-            // Automatisch in DB speichern (asynchron ohne await)
-            _ = SaveCurrentStepsAsync();
         });
+
+        // Automatisch in DB speichern (asynchron ohne await)
+        _ = SaveCurrentStepsAsync();
     }
 
     public async Task<bool> CheckAndRequestPermissionAsync()
@@ -69,6 +72,7 @@ public class BlazorStepCounterService
     {
         try
         {
+            await _initializationTask;
             var hasPermission = await CheckAndRequestPermissionAsync();
             if (!hasPermission)
             {
@@ -108,6 +112,7 @@ public class BlazorStepCounterService
     {
         try
         {
+            await _initializationTask;
             System.Diagnostics.Debug.WriteLine("🔷 Stoppe IStepCounterService...");
             await _stepCounterService.StopCountingAsync();
             System.Diagnostics.Debug.WriteLine("✅ IStepCounterService gestoppt");
