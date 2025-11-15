@@ -1,0 +1,125 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+	<!-- Heller Hintergrund -->
+	<circle cx="256" cy="256" r="250" fill="#FFF9E6"/>
+
+	<!-- Keks-Körper (großer runder Keks) -->
+	<circle cx="256" cy="240" r="145" fill="#D4A574"/>
+
+	<!-- Keks-Rand-Textur für 3D-Effekt -->
+	<circle cx="256" cy="240" r="145" fill="none" stroke="#C19A6B" stroke-width="8" opacity="0.4"/>
+
+	<!-- Keks-Textur (hellere Flecken) -->
+	<ellipse cx="180" cy="190" rx="20" ry="16" fill="#E8C9A0" opacity="0.5"/>
+	<ellipse cx="320" cy="200" rx="18" ry="20" fill="#E8C9A0" opacity="0.5"/>
+	<ellipse cx="200" cy="280" rx="22" ry="18" fill="#E8C9A0" opacity="0.5"/>
+	<ellipse cx="310" cy="270" rx="19" ry="22" fill="#E8C9A0" opacity="0.5"/>
+
+	<!-- Schokoladenchips - besser verteilt! -->
+	<!-- Oben links -->
+	<circle cx="190" cy="170" r="16" fill="#3E2723"/>
+	<circle cx="192" cy="167" r="5" fill="#6D4C41" opacity="0.6"/>
+
+	<!-- Oben rechts -->
+	<circle cx="320" cy="165" r="18" fill="#3E2723"/>
+	<circle cx="323" cy="162" r="6" fill="#6D4C41" opacity="0.6"/>
+
+	<!-- Mitte links -->
+	<circle cx="170" cy="240" r="15" fill="#3E2723"/>
+	<circle cx="172" cy="238" r="5" fill="#6D4C41" opacity="0.6"/>
+
+	<!-- Mitte rechts -->
+	<circle cx="340" cy="245" r="17" fill="#3E2723"/>
+	<circle cx="342" cy="242" r="6" fill="#6D4C41" opacity="0.6"/>
+
+	<!-- Unten links -->
+	<circle cx="200" cy="310" r="14" fill="#3E2723"/>
+	<circle cx="202" cy="308" r="4" fill="#6D4C41" opacity="0.6"/>
+
+	<!-- Unten rechts -->
+	<circle cx="310" cy="305" r="16" fill="#3E2723"/>
+	<circle cx="312" cy="302" r="5" fill="#6D4C41" opacity="0.6"/>
+
+	<!-- Mittig oben -->
+	<circle cx="255" cy="155" r="13" fill="#3E2723"/>
+	<circle cx="257" cy="153" r="4" fill="#6D4C41" opacity="0.6"/>
+
+	<!-- AUGEN - jetzt beide deutlich sichtbar! -->
+
+	<!-- LINKES AUGE (offen) -->
+	<ellipse cx="215" cy="210" rx="22" ry="26" fill="#FFFFFF"/>
+	<circle cx="215" cy="210" r="22" fill="#FFFFFF"/>
+	<ellipse cx="215" cy="213" rx="14" ry="18" fill="#3E2723"/>
+	<!-- Glanzpunkt -->
+	<ellipse cx="211" cy="207" rx="6" ry="8" fill="#FFFFFF" opacity="0.8"/>
+	<circle cx="209" cy="205" r="3" fill="#FFFFFF"/>
+
+	<!-- RECHTES AUGE (zwinkernd) -->
+	<!-- Geschlossenes Lid -->
+	<path d="M 285 210 Q 297 216 309 210" stroke="#3E2723" stroke-width="7" fill="none" stroke-linecap="round"/>
+	<path d="M 287 212 L 307 212" stroke="#3E2723" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.6"/>
+	<!-- Wimpern -->
+	<path d="M 285 210 L 280 205" stroke="#3E2723" stroke-width="3" fill="none" stroke-linecap="round"/>
+	<path d="M 297 216 L 297 221" stroke="#3E2723" stroke-width="3" fill="none" stroke-linecap="round"/>
+	<path d="M 309 210 L 314 205" stroke="#3E2723" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+	<!-- Fröhlicher großer Mund -->
+	<path d="M 220 250 Q 256 280 292 250" stroke="#3E2723" stroke-width="8" fill="none" stroke-linecap="round"/>
+	<!-- Innerer Mund -->
+	<path d="M 230 255 Q 256 275 282 255" fill="#FF6B9D" stroke="#D84A6F" stroke-width="2"/>
+	<!-- Zunge -->
+	<ellipse cx="256" cy="268" rx="15" ry="10" fill="#FF6B9D"/>
+	<ellipse cx="256" cy="268" rx="12" ry="7" fill="#FF8FAB"/>
+
+	<!-- LINKER ARM (winkt nach oben) -->
+	<ellipse cx="145" cy="240" rx="28" ry="55" fill="#D4A574" transform="rotate(-35 145 240)"/>
+	<circle cx="130" cy="270" r="22" fill="#D4A574"/>
+	<!-- Hand/Pfote -->
+	<ellipse cx="118" cy="283" rx="18" ry="22" fill="#D4A574" transform="rotate(-25 118 283)"/>
+	<!-- Finger-Andeutungen -->
+	<ellipse cx="110" cy="280" rx="8" ry="10" fill="#C19A6B" opacity="0.4"/>
+	<ellipse cx="118" cy="295" rx="8" ry="9" fill="#C19A6B" opacity="0.4"/>
+
+	<!-- RECHTER ARM (entspannt an der Seite) -->
+	<ellipse cx="365" cy="255" rx="28" ry="50" fill="#D4A574" transform="rotate(25 365 255)"/>
+	<circle cx="380" cy="290" r="20" fill="#D4A574"/>
+	<!-- Hand/Pfote -->
+	<ellipse cx="390" cy="303" rx="17" ry="20" fill="#D4A574" transform="rotate(20 390 303)"/>
+	<ellipse cx="395" cy="300" rx="7" ry="9" fill="#C19A6B" opacity="0.4"/>
+
+	<!-- LINKES BEIN (angehoben - aktive Gehbewegung!) -->
+	<ellipse cx="225" cy="365" rx="32" ry="65" fill="#D4A574" transform="rotate(25 225 365)"/>
+	<circle cx="212" cy="420" r="24" fill="#D4A574"/>
+	<!-- Fuß -->
+	<ellipse cx="200" cy="438" rx="28" ry="18" fill="#D4A574" transform="rotate(-5 200 438)"/>
+	<ellipse cx="183" cy="438" rx="20" ry="14" fill="#C19A6B" opacity="0.3"/>
+
+	<!-- RECHTES BEIN (auf dem Boden) -->
+	<ellipse cx="285" cy="375" rx="32" ry="65" fill="#D4A574" transform="rotate(-8 285 375)"/>
+	<circle cx="290" cy="435" r="24" fill="#D4A574"/>
+	<!-- Fuß -->
+	<ellipse cx="302" cy="452" rx="30" ry="18" fill="#D4A574" transform="rotate(5 302 452)"/>
+	<ellipse cx="320" cy="452" rx="22" ry="14" fill="#C19A6B" opacity="0.3"/>
+
+	<!-- BEWEGUNGSLINIEN (Dynamik!) -->
+	<path d="M 100 225 L 75 225" stroke="#C19A6B" stroke-width="5" stroke-linecap="round" opacity="0.5"/>
+	<path d="M 105 245 L 80 248" stroke="#C19A6B" stroke-width="5" stroke-linecap="round" opacity="0.5"/>
+	<path d="M 110 265 L 85 270" stroke="#C19A6B" stroke-width="4" stroke-linecap="round" opacity="0.4"/>
+	<path d="M 115 285 L 95 292" stroke="#C19A6B" stroke-width="4" stroke-linecap="round" opacity="0.3"/>
+
+	<!-- FALLENDE KRÜMEL (witziges Detail!) -->
+	<circle cx="235" cy="415" r="5" fill="#B8956A" opacity="0.7">
+		<animate attributeName="cy" values="415;425;415" dur="2s" repeatCount="indefinite"/>
+	</circle>
+	<circle cx="255" cy="425" r="4" fill="#B8956A" opacity="0.6">
+		<animate attributeName="cy" values="425;435;425" dur="2.5s" repeatCount="indefinite"/>
+	</circle>
+	<circle cx="265" cy="435" r="4.5" fill="#B8956A" opacity="0.6">
+		<animate attributeName="cy" values="435;445;435" dur="2.2s" repeatCount="indefinite"/>
+	</circle>
+	<circle cx="245" cy="440" r="3.5" fill="#B8956A" opacity="0.5">
+		<animate attributeName="cy" values="440;448;440" dur="2.8s" repeatCount="indefinite"/>
+	</circle>
+
+	<!-- 3D-Schatten unten -->
+	<ellipse cx="256" cy="465" rx="80" ry="15" fill="#000000" opacity="0.15"/>
+</svg>

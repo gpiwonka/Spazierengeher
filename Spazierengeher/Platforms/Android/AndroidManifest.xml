@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.piwonka.spzierengeher" android:versionCode="1" android:versionName="spazieren">
+	<application android:allowBackup="true" android:icon="@mipmap/appicon" android:supportsRtl="true" android:label="Spazierengeher">
+		<service
+    android:name="com.piwonka.spzierengeher.Platforms.Android.Services.StepCounterForegroundService"
+    android:enabled="true"
+    android:exported="false"
+    android:foregroundServiceType="health|dataSync" />
+
+	</application>
+	<!-- Schrittzähler-Berechtigung (Android 10+) -->
+	<uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+	<!-- Foreground Service Berechtigung (Android 9+) -->
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+	<!-- Foreground Service Health Berechtigung (Android 14+) -->
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
+	<!-- Benachrichtigungs-Berechtigung (Android 13+) -->
+	<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+	<!-- Wake Lock um Prozessor aktiv zu halten -->
+	<uses-permission android:name="android.permission.WAKE_LOCK" />
+	<uses-permission android:name="android.permission.BODY_SENSORS" />
+	<uses-permission android:name="android.permission.BODY_SENSORS_BACKGROUND" />
+	<uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+	<!-- Feature-Deklarationen -->
+	<uses-feature android:name="android.hardware.sensor.stepdetector" android:required="false" />
+	<uses-feature android:name="android.hardware.sensor.stepcounter" android:required="false" />
+</manifest>

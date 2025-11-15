@@ -1,0 +1,246 @@
+﻿@page "/"
+@using Spazierengeher.Data
+@using Spazierengeher.BlazorServices
+@using Spazierengeher.Services
+@inject BlazorStepCounterService StepCounterService
+
+@inject DailyStepsDb Db
+@implements IDisposable
+
+<div class="home-container">
+    <h1>🚶 Spazierengeher</h1>
+
+    <div class="main-card">
+        <!-- Große Schritt-Anzeige -->
+        <div class="step-display">
+            <div class="step-count">@today</div>
+            <div class="step-label">Schritte heute</div>
+        </div>
+
+        <!-- Fortschrittsbalken -->
+        <div class="progress-section">
+            <div class="progress-bar-container">
+                <div class="progress-bar" style="width: @(progress * 100)%"></div>
+            </div>
+            <div class="progress-text">
+                @((int)(progress * 100))% von @goal Schritten
+            </div>
+        </div>
+
+        <!-- Status-Anzeige (nur Info, keine Buttons) -->
+        <div class="status-section">
+            @if (isTracking)
+            {
+                <div class="status-badge active">
+                    <span class="status-icon">✓</span>
+                    Tracking aktiv
+                </div>
+            }
+            else
+            {
+                <div class="status-badge inactive">
+                    <span class="status-icon">⏸</span>
+                    Tracking pausiert
+                </div>
+            }
+            <p class="status-hint">
+                Tracking in den <a href="/settings">Einstellungen</a> steuern
+            </p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-error">
+                @errorMessage
+            </div>
+        }
+    </div>
+
+    <!-- Statistiken -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">🔥</div>
+            <div class="stat-value">@calories.ToString("F0")</div>
+            <div class="stat-label">Kalorien</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📏</div>
+            <div class="stat-value">@distance.ToString("F2")</div>
+            <div class="stat-label">km</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⏱️</div>
+            <div class="stat-value">@activeTime</div>
+            <div class="stat-label">Minuten</div>
+        </div>
+    </div>
+
+    <!-- Ziel-Einstellung -->
+    <div class="goal-section">
+        <h3>Tagesziel anpassen</h3>
+        <div class="goal-input-group">
+            <label for="goalInput">Ziel:</label>
+            <input type="number"
+                   id="goalInput"
+                   @bind="goal"
+                   min="1000"
+                   step="500"
+                   @bind:event="oninput" />
+            <span class="goal-unit">Schritte</span>
+        </div>
+        <button class="btn btn-save" @onclick="SaveGoal" disabled="@isSaving">
+            @(isSaving ? "Speichere..." : "Ziel speichern")
+        </button>
+        @if (goalSaved)
+        {
+            <div class="success-message">✓ Ziel gespeichert!</div>
+        }
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-links">
+        <a href="history" class="nav-link">
+            <span class="nav-icon">📊</span>
+            Historie ansehen
+        </a>
+        <a href="settings" class="nav-link">
+            <span class="nav-icon">⚙️</span>
+            Einstellungen
+        </a>
+    </div>
+</div>
+
+@code {
+    private int today = 0;
+    private int goal = 10000;
+    private double progress => goal == 0 ? 0 : Math.Min(1.0, (double)today / goal);
+    private bool isTracking = false;
+    private bool isSaving = false;
+    private bool goalSaved = false;
+    private string errorMessage = string.Empty;
+    private double calories = 0;
+    private double distance = 0;
+    private int activeTime = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Lade Einstellungen und heutige Schritte
+            await StepCounterService.ReloadSettingsAsync();
+            goal = StepCounterService.GetDailyGoal();
+            today = await Db.GetStepsAsync(DailyStepsDb.TodayKey);
+
+            // Event registrieren
+            StepCounterService.OnStepCountChanged += HandleStepCountChanged;
+
+            // Aktualisiere die Anzeige mit bereits gespeicherten Schritten
+            UpdateDisplayValues();
+
+            // Tracking-Status prüfen
+            isTracking = StepCounterService.IsTracking;
+
+            // AUTOMATISCH STARTEN wenn nicht schon läuft
+            if (!isTracking)
+            {
+                await AutoStartTracking();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Fehler beim Laden: {ex.Message}";
+        }
+    }
+
+    private async Task AutoStartTracking()
+    {
+        try
+        {
+            var result = await StepCounterService.StartTrackingAsync();
+
+            if (result.Success)
+            {
+                isTracking = true;
+                errorMessage = string.Empty;
+            }
+            else
+            {
+                // Zeige Fehler nur wenn kritisch (z.B. keine Berechtigung)
+                if (result.Message.Contains("Berechtigung"))
+                {
+                    errorMessage = result.Message + " Bitte erlaube den Zugriff in den Einstellungen.";
+                }
+            }
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Auto-Start Fehler: {ex.Message}");
+            // Fehler nicht dem Benutzer zeigen, läuft im Hintergrund weiter
+        }
+    }
+
+    private void HandleStepCountChanged(object sender, int stepCount)
+    {
+        today = stepCount;
+        UpdateDisplayValues();
+
+        // UI aktualisieren
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void UpdateDisplayValues()
+    {
+        calories = StepCounterService.GetEstimatedCalories();
+        distance = StepCounterService.GetEstimatedDistanceKm();
+
+        // Berechne aktive Zeit (sehr grobe Schätzung: ~100 Schritte/Minute)
+        if (today > 0)
+        {
+            activeTime = today / 100;
+        }
+    }
+
+    private async Task SaveGoal()
+    {
+        isSaving = true;
+        goalSaved = false;
+        StateHasChanged();
+
+        try
+        {
+            if (goal < 1000)
+            {
+                errorMessage = "Das Ziel muss mindestens 1.000 Schritte sein.";
+                return;
+            }
+
+            var settings = StepCounterService.Settings;
+            settings.DailyGoal = goal;
+            await StepCounterService.UpdateSettingsAsync(settings);
+
+            goalSaved = true;
+            errorMessage = string.Empty;
+
+            // Erfolgs-Nachricht nach 3 Sekunden ausblenden
+            await Task.Delay(3000);
+            goalSaved = false;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Fehler beim Speichern: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        StepCounterService.OnStepCountChanged -= HandleStepCountChanged;
+    }
+}

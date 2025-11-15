@@ -1,0 +1,458 @@
+﻿@page "/goals"
+@using Spazierengeher.Data
+@using Spazierengeher.BlazorServices
+
+@inject BlazorStepCounterService StepCounterService
+@inject DailyStepsDb Db
+
+<div class="goals-container">
+    <h1>🎯 Deine Ziele & Reisen</h1>
+
+    <!-- Gesamt-Fortschritt -->
+    <div class="total-progress-card">
+        <h2>🌍 Deine Gesamt-Statistik</h2>
+        <div class="total-stats">
+            <div class="total-stat">
+                <div class="stat-icon">👣</div>
+                <div class="stat-value">@totalSteps.ToString("N0")</div>
+                <div class="stat-label">Gesamt Schritte</div>
+            </div>
+            <div class="total-stat">
+                <div class="stat-icon">📏</div>
+                <div class="stat-value">@totalDistanceKm.ToString("N0") km</div>
+                <div class="stat-label">Gesamt Distanz</div>
+            </div>
+            <div class="total-stat">
+                <div class="stat-icon">🏆</div>
+                <div class="stat-value">@completedJourneys</div>
+                <div class="stat-label">Reisen abgeschlossen</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+        <button class="tab-btn @(activeTab == "journeys" ? "active" : "")" @onclick='() => activeTab = "journeys"'>
+            🗺️ Virtuelle Reisen
+        </button>
+        <button class="tab-btn @(activeTab == "milestones" ? "active" : "")" @onclick='() => activeTab = "milestones"'>
+            🏅 Meilensteine
+        </button>
+    </div>
+
+    <!-- Virtuelle Reisen -->
+    @if (activeTab == "journeys")
+    {
+        <div class="tab-content">
+            <h2>🗺️ Virtuelle Reisen durch Europa</h2>
+            <p class="subtitle">Erreiche Städte durch deine gesammelten Kilometer!</p>
+
+            <div class="journeys-list">
+                @foreach (var journey in journeys)
+                {
+                    var progressPercent = Math.Min((totalDistanceKm / (double)journey.DistanceKm) * 100, 100);
+                    var isCompleted = totalDistanceKm >= journey.DistanceKm;
+                    var remainingKm = Math.Max(journey.DistanceKm - totalDistanceKm, 0);
+
+                    <div class="journey-card @(isCompleted ? "completed" : "")">
+                        <div class="journey-header">
+                            <div class="journey-emoji">@journey.Emoji</div>
+                            <div class="journey-info">
+                                <h3>@journey.From → @journey.To</h3>
+                                <p class="journey-country">@journey.Country</p>
+                            </div>
+                            @if (isCompleted)
+                            {
+                                <div class="completed-badge">✓ Abgeschlossen</div>
+                            }
+                        </div>
+
+                        <div class="journey-distance">
+                            <strong>@journey.DistanceKm km</strong>
+                            <span class="journey-steps">≈ @journey.EstimatedSteps.ToString("N0") Schritte</span>
+                        </div>
+
+                        <div class="progress-section">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" style="width: @progressPercent%"></div>
+                            </div>
+                            <div class="progress-info">
+                                @if (isCompleted)
+                                {
+                                    <span class="progress-complete">🎉 Ziel erreicht!</span>
+                                }
+                                else
+                                {
+                                    <span>@remainingKm km verbleibend</span>
+                                    <span>@((int)progressPercent)%</span>
+                                }
+                            </div>
+                        </div>
+
+                        @if (isCompleted)
+                        {
+                            <div class="completion-info">
+                                <p>🏆 Glückwunsch! Du hast diese Strecke geschafft!</p>
+                                @if (!string.IsNullOrEmpty(journey.FunFact))
+                                {
+                                    <p class="fun-fact">💡 <em>@journey.FunFact</em></p>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Meilensteine -->
+    @if (activeTab == "milestones")
+    {
+        <div class="tab-content">
+            <h2>🏅 Meilensteine</h2>
+            <p class="subtitle">Erreiche beeindruckende Schritt-Ziele!</p>
+
+            <div class="milestones-grid">
+                @foreach (var milestone in milestones)
+                {
+                    var isAchieved = totalSteps >= milestone.RequiredSteps;
+                    var progressPercent = Math.Min((totalSteps / (double)milestone.RequiredSteps) * 100, 100);
+
+                    <div class="milestone-card @(isAchieved ? "achieved" : "")">
+                        <div class="milestone-icon">@milestone.Emoji</div>
+                        <h3>@milestone.Title</h3>
+                        <p class="milestone-description">@milestone.Description</p>
+
+                        <div class="milestone-target">
+                            @milestone.RequiredSteps.ToString("N0") Schritte
+                        </div>
+
+                        @if (isAchieved)
+                        {
+                            <div class="achievement-badge">
+                                <span class="badge-icon">🏆</span>
+                                <span>Erreicht!</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="milestone-progress">
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: @progressPercent%"></div>
+                                </div>
+                                <p class="progress-text">
+                                    @totalSteps.ToString("N0") / @milestone.RequiredSteps.ToString("N0")
+                                    <span>(@((int)progressPercent)%)</span>
+                                </p>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Navigation -->
+    <div class="nav-section">
+        <a href="/" class="back-link">← Zurück zur Startseite</a>
+    </div>
+</div>
+
+@code {
+    private string activeTab = "journeys";
+    private int totalSteps = 0;
+    private double totalDistanceKm = 0;
+    private int completedJourneys = 0;
+
+    private List<Journey> journeys = new();
+    private List<Milestone> milestones = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+        InitializeJourneys();
+        InitializeMilestones();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            // Lade alle historischen Daten
+            var allData = await Db.GetRecentAsync(365); // Letztes Jahr
+            totalSteps = allData.Sum(d => d.Steps);
+
+            // Berechne Distanz (0.8m pro Schritt als Durchschnitt)
+            totalDistanceKm = Math.Round(totalSteps * 0.0008, 1);
+
+            // Zähle abgeschlossene Reisen
+            completedJourneys = journeys.Count(j => totalDistanceKm >= j.DistanceKm);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ LoadData Fehler: {ex.Message}");
+        }
+    }
+
+    private void InitializeJourneys()
+    {
+        journeys = new List<Journey>
+        {
+            // Österreich
+            new Journey
+            {
+                Emoji = "🇦🇹",
+                From = "Wien",
+                To = "Salzburg",
+                Country = "Österreich",
+                DistanceKm = 300,
+                EstimatedSteps = 375000,
+                FunFact = "Die Strecke führt durch die wunderschöne Wachau!"
+            },
+            new Journey
+            {
+                Emoji = "🏔️",
+                From = "Salzburg",
+                To = "Innsbruck",
+                Country = "Österreich",
+                DistanceKm = 180,
+                EstimatedSteps = 225000,
+                FunFact = "Auf dem Weg passierst du die majestätischen Alpen!"
+            },
+
+            // Österreich → Deutschland
+            new Journey
+            {
+                Emoji = "🇩🇪",
+                From = "Innsbruck",
+                To = "München",
+                Country = "Deutschland",
+                DistanceKm = 160,
+                EstimatedSteps = 200000,
+                FunFact = "Willkommen in Bayern - dem Land des Bieres!"
+            },
+            new Journey
+            {
+                Emoji = "🍺",
+                From = "München",
+                To = "Nürnberg",
+                Country = "Deutschland",
+                DistanceKm = 170,
+                EstimatedSteps = 212500,
+                FunFact = "Nürnberg ist berühmt für Lebkuchen und Bratwurst!"
+            },
+            new Journey
+            {
+                Emoji = "🏰",
+                From = "Nürnberg",
+                To = "Frankfurt",
+                Country = "Deutschland",
+                DistanceKm = 220,
+                EstimatedSteps = 275000,
+                FunFact = "Frankfurt ist das Finanzzentrum Deutschlands!"
+            },
+            new Journey
+            {
+                Emoji = "🌉",
+                From = "Frankfurt",
+                To = "Köln",
+                Country = "Deutschland",
+                DistanceKm = 190,
+                EstimatedSteps = 237500,
+                FunFact = "Der Kölner Dom ist eines der bekanntesten Wahrzeichen!"
+            },
+
+            // Deutschland → Niederlande → Belgien
+            new Journey
+            {
+                Emoji = "🇳🇱",
+                From = "Köln",
+                To = "Amsterdam",
+                Country = "Niederlande",
+                DistanceKm = 270,
+                EstimatedSteps = 337500,
+                FunFact = "Amsterdam hat mehr Fahrräder als Einwohner!"
+            },
+            new Journey
+            {
+                Emoji = "🇧🇪",
+                From = "Amsterdam",
+                To = "Brüssel",
+                Country = "Belgien",
+                DistanceKm = 200,
+                EstimatedSteps = 250000,
+                FunFact = "Brüssel ist die Hauptstadt der EU und berühmt für Schokolade!"
+            },
+
+            // Belgien → Frankreich
+            new Journey
+            {
+                Emoji = "🇫🇷",
+                From = "Brüssel",
+                To = "Paris",
+                Country = "Frankreich",
+                DistanceKm = 310,
+                EstimatedSteps = 387500,
+                FunFact = "Die Stadt der Liebe und des Eiffelturms!"
+            },
+
+            // Frankreich → England (Tunnel!)
+            new Journey
+            {
+                Emoji = "🚇",
+                From = "Paris",
+                To = "London (Eurotunnel)",
+                Country = "England",
+                DistanceKm = 450,
+                EstimatedSteps = 562500,
+                FunFact = "Unter dem Ärmelkanal durch - 50km unter Wasser!"
+            },
+
+            // Schweiz (Alternativroute)
+            new Journey
+            {
+                Emoji = "🇨🇭",
+                From = "Innsbruck",
+                To = "Zürich",
+                Country = "Schweiz",
+                DistanceKm = 240,
+                EstimatedSteps = 300000,
+                FunFact = "Die Schweiz hat über 1.500 Seen!"
+            },
+            new Journey
+            {
+                Emoji = "⛰️",
+                From = "Zürich",
+                To = "Bern",
+                Country = "Schweiz",
+                DistanceKm = 120,
+                EstimatedSteps = 150000,
+                FunFact = "Bern wurde um den Fluss Aare herum gebaut!"
+            },
+            new Journey
+            {
+                Emoji = "🏔️",
+                From = "Bern",
+                To = "Genf",
+                Country = "Schweiz",
+                DistanceKm = 160,
+                EstimatedSteps = 200000,
+                FunFact = "Genf beherbergt den europäischen Sitz der UNO!"
+            },
+
+            // Große Herausforderungen
+            new Journey
+            {
+                Emoji = "🌍",
+                From = "Wien",
+                To = "London",
+                Country = "Quer durch Europa",
+                DistanceKm = 1500,
+                EstimatedSteps = 1875000,
+                FunFact = "Eine epische Reise durch 7 Länder!"
+            },
+            new Journey
+            {
+                Emoji = "🏖️",
+                From = "Wien",
+                To = "Barcelona",
+                Country = "Nach Spanien",
+                DistanceKm = 1700,
+                EstimatedSteps = 2125000,
+                FunFact = "Vom Schnitzel zur Paella - 1.700km!"
+            },
+            new Journey
+            {
+                Emoji = "🍕",
+                From = "Wien",
+                To = "Rom",
+                Country = "Nach Italien",
+                DistanceKm = 1200,
+                EstimatedSteps = 1500000,
+                FunFact = "Auf den Spuren der Römer!"
+            }
+        };
+    }
+
+    private void InitializeMilestones()
+    {
+        milestones = new List<Milestone>
+        {
+            new Milestone
+            {
+                Emoji = "🎯",
+                Title = "Erste Schritte",
+                Description = "Deine ersten 10.000 Schritte!",
+                RequiredSteps = 10000
+            },
+            new Milestone
+            {
+                Emoji = "🚶",
+                Title = "Spaziergänger",
+                Description = "100.000 Schritte erreicht",
+                RequiredSteps = 100000
+            },
+            new Milestone
+            {
+                Emoji = "🏃",
+                Title = "Aktiver Läufer",
+                Description = "Eine halbe Million Schritte!",
+                RequiredSteps = 500000
+            },
+            new Milestone
+            {
+                Emoji = "🎖️",
+                Title = "Marathon-Kämpfer",
+                Description = "1 Million Schritte geschafft",
+                RequiredSteps = 1000000
+            },
+            new Milestone
+            {
+                Emoji = "🏅",
+                Title = "Ultra-Läufer",
+                Description = "5 Millionen Schritte!",
+                RequiredSteps = 5000000
+            },
+            new Milestone
+            {
+                Emoji = "👑",
+                Title = "Schritt-König",
+                Description = "10 Millionen Schritte - Unglaublich!",
+                RequiredSteps = 10000000
+            },
+            new Milestone
+            {
+                Emoji = "🌟",
+                Title = "Legende",
+                Description = "25 Millionen Schritte - Du bist eine Legende!",
+                RequiredSteps = 25000000
+            },
+            new Milestone
+            {
+                Emoji = "🚀",
+                Title = "Zum Mond",
+                Description = "50 Millionen Schritte - Du könntest zum Mond laufen!",
+                RequiredSteps = 50000000
+            }
+        };
+    }
+
+    private class Journey
+    {
+        public string Emoji { get; set; }
+        public string From { get; set; }
+        public string To { get; set; }
+        public string Country { get; set; }
+        public int DistanceKm { get; set; }
+        public int EstimatedSteps { get; set; }
+        public string FunFact { get; set; }
+    }
+
+    private class Milestone
+    {
+        public string Emoji { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public int RequiredSteps { get; set; }
+    }
+}

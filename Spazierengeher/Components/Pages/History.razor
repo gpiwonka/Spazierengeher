@@ -1,0 +1,434 @@
+﻿@page "/history"
+@using Spazierengeher.Data
+@using System.Globalization
+
+@inject DailyStepsDb Db
+
+<div class="history-container">
+    <h1>📊 Deine Historie</h1>
+
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+        <button class="tab-btn @(activeTab == "days" ? "active" : "")" @onclick='() => activeTab = "days"'>
+            📅 Tage
+        </button>
+        <button class="tab-btn @(activeTab == "weeks" ? "active" : "")" @onclick='() => activeTab = "weeks"'>
+            📆 Wochen
+        </button>
+        <button class="tab-btn @(activeTab == "months" ? "active" : "")" @onclick='() => activeTab = "months"'>
+            🗓️ Monate
+        </button>
+    </div>
+
+    <!-- Tages-Ansicht -->
+    @if (activeTab == "days")
+    {
+        <div class="tab-content">
+            <h2>Letzte 14 Tage</h2>
+
+            @if (dailyStats.Any())
+            {
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-value">@dailyStats.Average(d => d.Steps).ToString("N0")</div>
+                        <div class="stat-label">Ø Schritte/Tag</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏆</div>
+                        <div class="stat-value">@dailyStats.Max(d => d.Steps).ToString("N0")</div>
+                        <div class="stat-label">Bester Tag</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📈</div>
+                        <div class="stat-value">@dailyStats.Sum(d => d.Steps).ToString("N0")</div>
+                        <div class="stat-label">Gesamt</div>
+                    </div>
+                </div>
+
+                <div class="data-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Datum</th>
+                                <th>Wochentag</th>
+                                <th>Schritte</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var day in dailyStats)
+                            {
+                                var goalReached = day.Steps >= 10000;
+
+                                <tr class="@(goalReached ? "goal-reached" : "")">
+                                    <td>@day.DisplayDate</td>
+                                    <td>@day.DayName</td>
+                                    <td class="steps-cell">@day.Steps.ToString("N0")</td>
+                                    <td class="status-cell">
+                                        @if (goalReached)
+                                        {
+                                            <span class="status-badge success">✓ Ziel erreicht</span>
+                                        }
+                                        else if (day.Steps > 0)
+                                        {
+                                            <span class="status-badge partial">@((day.Steps * 100 / 10000))%</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="status-badge none">-</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <p>📭 Noch keine Daten vorhanden</p>
+                    <p class="hint">Starte das Tracking um Daten zu sammeln</p>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Wochen-Ansicht -->
+    @if (activeTab == "weeks")
+    {
+        <div class="tab-content">
+            <h2>Letzte 8 Wochen</h2>
+
+            @if (weeklyStats.Any())
+            {
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-value">@weeklyStats.Average(w => w.TotalSteps).ToString("N0")</div>
+                        <div class="stat-label">Ø Schritte/Woche</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏆</div>
+                        <div class="stat-value">@weeklyStats.Max(w => w.TotalSteps).ToString("N0")</div>
+                        <div class="stat-label">Beste Woche</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📈</div>
+                        <div class="stat-value">@weeklyStats.Average(w => w.DailyAverage).ToString("N0")</div>
+                        <div class="stat-label">Ø pro Tag</div>
+                    </div>
+                </div>
+
+                <div class="data-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Kalenderwoche</th>
+                                <th>Zeitraum</th>
+                                <th>Tage</th>
+                                <th>Gesamt</th>
+                                <th>Ø/Tag</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var week in weeklyStats)
+                            {
+                                <tr>
+                                    <td class="week-cell">KW @week.WeekNumber</td>
+                                    <td>@week.StartDate.ToString("dd.MM.") - @week.EndDate.ToString("dd.MM.yyyy")</td>
+                                    <td>@week.DaysWithData Tage</td>
+                                    <td class="steps-cell">@week.TotalSteps.ToString("N0")</td>
+                                    <td class="steps-cell">@week.DailyAverage.ToString("N0")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <p>📭 Noch keine Wochen-Daten vorhanden</p>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Monats-Ansicht -->
+    @if (activeTab == "months")
+    {
+        <div class="tab-content">
+            <h2>Letzte 6 Monate</h2>
+
+            @if (monthlyStats.Any())
+            {
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-value">@monthlyStats.Average(m => m.TotalSteps).ToString("N0")</div>
+                        <div class="stat-label">Ø Schritte/Monat</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏆</div>
+                        <div class="stat-value">@monthlyStats.Max(m => m.TotalSteps).ToString("N0")</div>
+                        <div class="stat-label">Bester Monat</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📈</div>
+                        <div class="stat-value">@monthlyStats.Average(m => m.DailyAverage).ToString("N0")</div>
+                        <div class="stat-label">Ø pro Tag</div>
+                    </div>
+                </div>
+
+                <div class="data-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Monat</th>
+                                <th>Tage erfasst</th>
+                                <th>Gesamt</th>
+                                <th>Ø/Tag</th>
+                                <th>Ziel erreicht</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var month in monthlyStats)
+                            {
+                                <tr>
+                                    <td class="month-cell">@month.MonthName</td>
+                                    <td>@month.CompleteDays / @month.TotalDaysInMonth Tage</td>
+                                    <td class="steps-cell">@month.TotalSteps.ToString("N0")</td>
+                                    <td class="steps-cell">@month.DailyAverage.ToString("N0")</td>
+                                    <td>
+                                        <span class="goal-percentage">@month.GoalReachedPercentage%</span>
+                                        <small>(@month.DaysGoalReached Tage)</small>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <p>📭 Noch keine Monats-Daten vorhanden</p>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Navigation -->
+    <div class="nav-section">
+        <a href="/" class="back-link">← Zurück zur Startseite</a>
+    </div>
+</div>
+
+@code {
+    private string activeTab = "days";
+    private List<DayViewModel> dailyStats = new();
+    private List<WeekStats> weeklyStats = new();
+    private List<MonthStats> monthlyStats = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            // Lade Rohdaten aus der DB (max. 180 Tage)
+            var rawData = await Db.GetRecentAsync(180);
+
+            // ALLE Transformationen in C# machen (nicht in SQL!)
+            // Parse Dates first
+            var parsedData = new List<(string DateKey, DateTime Date, int Steps)>();
+
+            foreach (var item in rawData)
+            {
+                if (DateTime.TryParseExact(item.DateKey, "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+                {
+                    parsedData.Add((item.DateKey, date, item.Steps));
+                }
+            }
+
+            // Tages-Statistik (letzte 14 Tage)
+            dailyStats = parsedData
+                .Take(14)
+                .Select(d => new DayViewModel
+                {
+                    DateKey = d.DateKey,
+                    Date = d.Date,
+                    DisplayDate = d.Date.ToString("dd.MM.yyyy"),
+                    DayName = GetGermanDayName(d.Date.DayOfWeek),
+                    Steps = d.Steps
+                })
+                .ToList();
+
+            // Wochen-Statistik
+            weeklyStats = CalculateWeeklyStats(parsedData);
+
+            // Monats-Statistik (nur ganze Tage)
+            monthlyStats = CalculateMonthlyStats(parsedData);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ LoadData Fehler: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"StackTrace: {ex.StackTrace}");
+        }
+    }
+
+    private List<WeekStats> CalculateWeeklyStats(List<(string DateKey, DateTime Date, int Steps)> data)
+    {
+        var stats = new List<WeekStats>();
+
+        try
+        {
+            var cal = CultureInfo.CurrentCulture.Calendar;
+            var weekRule = CultureInfo.CurrentCulture.DateTimeFormat.CalendarWeekRule;
+            var firstDayOfWeek = CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek;
+
+            var grouped = data
+                .GroupBy(d => new
+                {
+                    Year = d.Date.Year,
+                    Week = cal.GetWeekOfYear(d.Date, weekRule, firstDayOfWeek)
+                })
+                .Take(8); // Letzte 8 Wochen
+
+            foreach (var group in grouped)
+            {
+                var dates = group.Select(g => g.Date).ToList();
+                var startDate = dates.Min();
+                var endDate = dates.Max();
+                var totalSteps = group.Sum(g => g.Steps);
+                var daysWithData = group.Count();
+
+                stats.Add(new WeekStats
+                {
+                    WeekNumber = group.Key.Week,
+                    Year = group.Key.Year,
+                    StartDate = startDate,
+                    EndDate = endDate,
+                    TotalSteps = totalSteps,
+                    DaysWithData = daysWithData,
+                    DailyAverage = daysWithData > 0 ? totalSteps / daysWithData : 0
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ WeeklyStats Fehler: {ex.Message}");
+        }
+
+        return stats;
+    }
+
+    private List<MonthStats> CalculateMonthlyStats(List<(string DateKey, DateTime Date, int Steps)> data)
+    {
+        var stats = new List<MonthStats>();
+        var today = DateTime.Today;
+
+        try
+        {
+            var grouped = data
+                .GroupBy(d => new { d.Date.Year, d.Date.Month })
+                .Take(6); // Letzte 6 Monate
+
+            foreach (var group in grouped)
+            {
+                var month = new DateTime(group.Key.Year, group.Key.Month, 1);
+                var isCurrentMonth = month.Year == today.Year && month.Month == today.Month;
+
+                // NUR GANZE TAGE verwenden
+                // Wenn aktueller Monat: nur bis gestern zählen
+                var cutoffDate = isCurrentMonth ? today.AddDays(-1) : month.AddMonths(1).AddDays(-1);
+
+                var validDays = group
+                    .Where(g => g.Date <= cutoffDate)
+                    .ToList();
+
+                if (!validDays.Any())
+                    continue; // Überspringe Monate ohne ganze Tage
+
+                var totalSteps = validDays.Sum(g => g.Steps);
+                var completeDays = validDays.Count;
+                var daysGoalReached = validDays.Count(g => g.Steps >= 10000);
+                var totalDaysInMonth = DateTime.DaysInMonth(group.Key.Year, group.Key.Month);
+
+                stats.Add(new MonthStats
+                {
+                    Year = group.Key.Year,
+                    Month = group.Key.Month,
+                    MonthName = month.ToString("MMMM yyyy", new CultureInfo("de-DE")),
+                    CompleteDays = completeDays,
+                    TotalDaysInMonth = totalDaysInMonth,
+                    TotalSteps = totalSteps,
+                    DailyAverage = completeDays > 0 ? totalSteps / completeDays : 0,
+                    DaysGoalReached = daysGoalReached,
+                    GoalReachedPercentage = completeDays > 0 ? (int)((daysGoalReached * 100.0) / completeDays) : 0
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ MonthlyStats Fehler: {ex.Message}");
+        }
+
+        return stats;
+    }
+
+    private string GetGermanDayName(DayOfWeek day)
+    {
+        return day switch
+        {
+            DayOfWeek.Monday => "Montag",
+            DayOfWeek.Tuesday => "Dienstag",
+            DayOfWeek.Wednesday => "Mittwoch",
+            DayOfWeek.Thursday => "Donnerstag",
+            DayOfWeek.Friday => "Freitag",
+            DayOfWeek.Saturday => "Samstag",
+            DayOfWeek.Sunday => "Sonntag",
+            _ => ""
+        };
+    }
+
+    // ViewModels
+    private class DayViewModel
+    {
+        public string DateKey { get; set; }
+        public DateTime Date { get; set; }
+        public string DisplayDate { get; set; }
+        public string DayName { get; set; }
+        public int Steps { get; set; }
+    }
+
+    private class WeekStats
+    {
+        public int WeekNumber { get; set; }
+        public int Year { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public int TotalSteps { get; set; }
+        public int DaysWithData { get; set; }
+        public int DailyAverage { get; set; }
+    }
+
+    private class MonthStats
+    {
+        public int Year { get; set; }
+        public int Month { get; set; }
+        public string MonthName { get; set; }
+        public int CompleteDays { get; set; }
+        public int TotalDaysInMonth { get; set; }
+        public int TotalSteps { get; set; }
+        public int DailyAverage { get; set; }
+        public int DaysGoalReached { get; set; }
+        public int GoalReachedPercentage { get; set; }
+    }
+}

@@ -1,0 +1,541 @@
+﻿/* Goals.razor.css */
+
+.goals-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+    .goals-container h1 {
+        text-align: center;
+        font-size: 32px;
+        margin-bottom: 30px;
+        color: #333;
+    }
+
+    .goals-container h2 {
+        font-size: 24px;
+        margin: 20px 0;
+        color: #555;
+    }
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    font-size: 16px;
+    margin-bottom: 30px;
+}
+
+/* Gesamt-Fortschritt */
+.total-progress-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 30px;
+    color: white;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+    .total-progress-card h2 {
+        margin: 0 0 25px 0;
+        text-align: center;
+        color: white;
+    }
+
+.total-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.total-stat {
+    text-align: center;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.stat-icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+/* Tab Navigation */
+.tab-navigation {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 15px 20px;
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+}
+
+    .tab-btn:hover {
+        color: #667eea;
+        background-color: rgba(102, 126, 234, 0.05);
+    }
+
+    .tab-btn.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+    }
+
+/* Tab Content */
+.tab-content {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Journey Cards */
+.journeys-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.journey-card {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 15px;
+    padding: 25px;
+    transition: all 0.3s ease;
+}
+
+    .journey-card:hover {
+        border-color: #667eea;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.15);
+    }
+
+    .journey-card.completed {
+        background: linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(76, 175, 80, 0.1) 100%);
+        border-color: #4CAF50;
+    }
+
+        .journey-card.completed:hover {
+            border-color: #4CAF50;
+            box-shadow: 0 10px 25px rgba(76, 175, 80, 0.2);
+        }
+
+.journey-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.journey-emoji {
+    font-size: 48px;
+    line-height: 1;
+}
+
+.journey-info {
+    flex: 1;
+}
+
+    .journey-info h3 {
+        margin: 0 0 5px 0;
+        font-size: 20px;
+        color: #333;
+    }
+
+.journey-country {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.completed-badge {
+    background-color: #4CAF50;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.journey-distance {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+    .journey-distance strong {
+        font-size: 18px;
+        color: #667eea;
+    }
+
+.journey-steps {
+    color: #999;
+    font-size: 14px;
+}
+
+/* Progress Section */
+.progress-section {
+    margin-bottom: 15px;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 12px;
+    background-color: #f0f0f0;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    transition: width 0.5s ease;
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+}
+
+.journey-card.completed .progress-bar {
+    background: linear-gradient(90deg, #4CAF50 0%, #66BB6A 100%);
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #666;
+}
+
+.progress-complete {
+    color: #4CAF50;
+    font-weight: 600;
+}
+
+.completion-info {
+    background-color: rgba(76, 175, 80, 0.1);
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+    .completion-info p {
+        margin: 0 0 10px 0;
+        color: #4CAF50;
+        font-weight: 600;
+    }
+
+        .completion-info p:last-child {
+            margin-bottom: 0;
+        }
+
+.fun-fact {
+    color: #666 !important;
+    font-weight: normal !important;
+    font-style: italic;
+}
+
+/* Milestones Grid */
+.milestones-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.milestone-card {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 15px;
+    padding: 25px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+    .milestone-card:hover {
+        border-color: #667eea;
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.15);
+    }
+
+    .milestone-card.achieved {
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 193, 7, 0.15) 100%);
+        border-color: #FFC107;
+    }
+
+        .milestone-card.achieved:hover {
+            border-color: #FFC107;
+            box-shadow: 0 10px 25px rgba(255, 193, 7, 0.3);
+        }
+
+.milestone-icon {
+    font-size: 64px;
+    margin-bottom: 15px;
+    animation: bounce 2s infinite;
+}
+
+.milestone-card.achieved .milestone-icon {
+    animation: pulse 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.milestone-card h3 {
+    font-size: 20px;
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.milestone-description {
+    color: #666;
+    font-size: 14px;
+    margin: 0 0 15px 0;
+}
+
+.milestone-target {
+    background-color: #667eea;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 15px;
+}
+
+.achievement-badge {
+    background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
+    color: #333;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
+}
+
+.badge-icon {
+    font-size: 20px;
+}
+
+.milestone-progress {
+    margin-top: 15px;
+}
+
+.progress-text {
+    font-size: 14px;
+    color: #666;
+    margin-top: 8px;
+}
+
+    .progress-text span {
+        color: #667eea;
+        font-weight: 600;
+        margin-left: 5px;
+    }
+
+/* Navigation */
+.nav-section {
+    margin-top: 40px;
+    text-align: center;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 24px;
+    background-color: #667eea;
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+    .back-link:hover {
+        background-color: #5568d3;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+    .goals-container h1,
+    .goals-container h2 {
+        color: #fff;
+    }
+
+    .subtitle {
+        color: #aaa;
+    }
+
+    .tab-navigation {
+        border-bottom-color: #444;
+    }
+
+    .tab-btn {
+        color: #aaa;
+    }
+
+        .tab-btn:hover {
+            color: #8b9cfa;
+            background-color: rgba(139, 156, 250, 0.1);
+        }
+
+        .tab-btn.active {
+            color: #8b9cfa;
+            border-bottom-color: #8b9cfa;
+        }
+
+    .journey-card,
+    .milestone-card {
+        background-color: #2c2c2c;
+        border-color: #444;
+    }
+
+        .journey-card:hover,
+        .milestone-card:hover {
+            border-color: #8b9cfa;
+        }
+
+        .journey-card.completed {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(76, 175, 80, 0.15) 100%);
+        }
+
+        .journey-info h3,
+        .milestone-card h3 {
+            color: #fff;
+        }
+
+    .journey-country,
+    .milestone-description,
+    .progress-text {
+        color: #aaa;
+    }
+
+    .progress-bar-container {
+        background-color: #444;
+    }
+
+    .completion-info {
+        background-color: rgba(76, 175, 80, 0.15);
+    }
+
+    .fun-fact {
+        color: #aaa !important;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .goals-container {
+        padding: 15px;
+    }
+
+        .goals-container h1 {
+            font-size: 24px;
+        }
+
+        .goals-container h2 {
+            font-size: 20px;
+        }
+
+    .total-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .journey-header {
+        flex-wrap: wrap;
+    }
+
+    .completed-badge {
+        width: 100%;
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    .milestones-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tab-btn {
+        font-size: 14px;
+        padding: 12px 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .journey-emoji {
+        font-size: 36px;
+    }
+
+    .journey-info h3 {
+        font-size: 18px;
+    }
+
+    .milestone-icon {
+        font-size: 48px;
+    }
+
+    .total-progress-card {
+        padding: 20px;
+    }
+
+    .stat-icon {
+        font-size: 32px;
+    }
+
+    .stat-value {
+        font-size: 24px;
+    }
+}
