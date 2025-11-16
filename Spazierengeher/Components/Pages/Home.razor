@@ -2,6 +2,7 @@
 @using Spazierengeher.Data
 @using Spazierengeher.BlazorServices
 @using Spazierengeher.Services
+@using System.Globalization
 @inject BlazorStepCounterService StepCounterService
 
 @inject DailyStepsDb Db
@@ -20,7 +21,7 @@
         <!-- Fortschrittsbalken -->
         <div class="progress-section">
             <div class="progress-bar-container">
-                <div class="progress-bar" style="width: @(progress * 100)%"></div>
+                <div class="progress-bar" style="@ProgressBarWidth"></div>
             </div>
             <div class="progress-text">
                 @((int)(progress * 100))% von @goal Schritten
@@ -114,6 +115,8 @@
     private int today = 0;
     private int goal = 10000;
     private double progress => goal == 0 ? 0 : Math.Min(1.0, (double)today / goal);
+    private string ProgressBarWidth => $"width: {(progress * 100).ToString(ProgressBarFormat, CultureInfo.InvariantCulture)}%";
+    private const string ProgressBarFormat = "0.##";
     private bool isTracking = false;
     private bool isSaving = false;
     private bool goalSaved = false;
