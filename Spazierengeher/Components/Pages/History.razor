@@ -245,16 +245,11 @@
             var rawData = await Db.GetRecentAsync(180);
 
             // ALLE Transformationen in C# machen (nicht in SQL!)
-            // Parse Dates first
-            var parsedData = new List<(string DateKey, DateTime Date, int Steps)>();
+            var parsedData = new List<(DateTime DateKey, DateTime Date, int Steps)>();
 
             foreach (var item in rawData)
             {
-                if (DateTime.TryParseExact(item.DateKey, "yyyy-MM-dd",
-                    CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
-                {
-                    parsedData.Add((item.DateKey, date, item.Steps));
-                }
+                parsedData.Add((item.DateKey, item.DateKey, item.Steps));
             }
 
             // Tages-Statistik (letzte 14 Tage)
@@ -283,7 +278,7 @@
         }
     }
 
-    private List<WeekStats> CalculateWeeklyStats(List<(string DateKey, DateTime Date, int Steps)> data)
+    private List<WeekStats> CalculateWeeklyStats(List<(DateTime DateKey, DateTime Date, int Steps)> data)
     {
         var stats = new List<WeekStats>();
 
@@ -329,7 +324,7 @@
         return stats;
     }
 
-    private List<MonthStats> CalculateMonthlyStats(List<(string DateKey, DateTime Date, int Steps)> data)
+    private List<MonthStats> CalculateMonthlyStats(List<(DateTime DateKey, DateTime Date, int Steps)> data)
     {
         var stats = new List<MonthStats>();
         var today = DateTime.Today;
@@ -401,7 +396,7 @@
     // ViewModels
     private class DayViewModel
     {
-        public string DateKey { get; set; }
+        public DateTime DateKey { get; set; }
         public DateTime Date { get; set; }
         public string DisplayDate { get; set; }
         public string DayName { get; set; }

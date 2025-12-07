@@ -151,6 +151,19 @@
             box-shadow: 0 10px 25px rgba(76, 175, 80, 0.2);
         }
 
+    .journey-card.locked {
+        opacity: 0.6;
+        background: linear-gradient(135deg, rgba(158, 158, 158, 0.05) 0%, rgba(158, 158, 158, 0.1) 100%);
+        border-color: #ccc;
+        cursor: not-allowed;
+    }
+
+        .journey-card.locked:hover {
+            transform: none;
+            box-shadow: none;
+            border-color: #ccc;
+        }
+
 .journey-header {
     display: flex;
     align-items: center;
@@ -187,6 +200,23 @@
     font-size: 14px;
     font-weight: 600;
     white-space: nowrap;
+}
+
+.locked-badge {
+    background-color: #999;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.unlock-info {
+    color: #999;
+    font-size: 13px;
+    font-style: italic;
+    margin-top: 8px;
 }
 
 .journey-distance {
@@ -298,6 +328,19 @@
         .milestone-card.achieved:hover {
             border-color: #FFC107;
             box-shadow: 0 10px 25px rgba(255, 193, 7, 0.3);
+        }
+
+    .milestone-card.locked {
+        opacity: 0.6;
+        background: linear-gradient(135deg, rgba(158, 158, 158, 0.05) 0%, rgba(158, 158, 158, 0.1) 100%);
+        border-color: #ccc;
+        cursor: not-allowed;
+    }
+
+        .milestone-card.locked:hover {
+            transform: none;
+            box-shadow: none;
+            border-color: #ccc;
         }
 
 .milestone-icon {

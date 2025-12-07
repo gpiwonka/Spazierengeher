@@ -1,5 +1,6 @@
 ﻿using Android.Content;
 using Android.Hardware;
+using Android.OS;
 using Spazierengeher.Services;
 using And = global::Android;
 namespace Spazierengeher.Platforms.Android.Services;
@@ -11,6 +12,7 @@ public class StepCounterService : Java.Lang.Object, IStepCounterService, ISensor
     private int _initialStepCount = -1;
     private int _currentStepCount = 0;
     private bool _isCountingStarted = false;
+    private PowerManager.WakeLock _wakeLock;
 
     public event EventHandler<int> StepCountChanged;
 
@@ -29,7 +31,7 @@ public class StepCounterService : Java.Lang.Object, IStepCounterService, ISensor
 
         if (!_isCountingStarted)
         {
-            bool hasPermission = true;
+
 
 #if ANDROID
             var status = await Permissions.CheckStatusAsync<Permissions.Sensors>();
@@ -43,6 +45,23 @@ public class StepCounterService : Java.Lang.Object, IStepCounterService, ISensor
                 }
             }
 #endif
+
+            // Start foreground service to keep running in background
+            try
+            {
+                StepCounterForegroundService.StartService(Platform.AppContext);
+                System.Diagnostics.Debug.WriteLine("✅ Foreground Service gestartet");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Foreground Service Fehler: {ex.Message}");
+            }
+
+            // Acquire WakeLock to keep CPU running for sensor updates
+            var powerManager = (PowerManager)Platform.AppContext.GetSystemService(Context.PowerService);
+            _wakeLock = powerManager.NewWakeLock(WakeLockFlags.Partial, "Spazierengeher::StepCounter");
+            _wakeLock.Acquire();
+            System.Diagnostics.Debug.WriteLine("✅ WakeLock acquired");
 
             _sensorManager.RegisterListener(this, _stepCounterSensor, SensorDelay.Normal);
             _isCountingStarted = true;
@@ -58,6 +77,25 @@ public class StepCounterService : Java.Lang.Object, IStepCounterService, ISensor
         {
             _sensorManager.UnregisterListener(this);
             _isCountingStarted = false;
+
+            // Release WakeLock
+            if (_wakeLock != null && _wakeLock.IsHeld)
+            {
+                _wakeLock.Release();
+                System.Diagnostics.Debug.WriteLine("✅ WakeLock released");
+            }
+
+            // Stop foreground service
+            try
+            {
+                var intent = new Intent(Platform.AppContext, typeof(StepCounterForegroundService));
+                Platform.AppContext.StopService(intent);
+                System.Diagnostics.Debug.WriteLine("✅ Foreground Service gestoppt");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Foreground Service Stop Fehler: {ex.Message}");
+            }
         }
 
         return Task.CompletedTask;

@@ -48,13 +48,35 @@
             <p class="subtitle">Erreiche Städte durch deine gesammelten Kilometer!</p>
 
             <div class="journeys-list">
-                @foreach (var journey in journeys)
-                {
-                    var progressPercent = Math.Min((totalDistanceKm / (double)journey.DistanceKm) * 100, 100);
-                    var isCompleted = totalDistanceKm >= journey.DistanceKm;
-                    var remainingKm = Math.Max(journey.DistanceKm - totalDistanceKm, 0);
+                @{
+                    double cumulativeDistance = 0;
+                    for (int i = 0; i < journeys.Count; i++)
+                    {
+                        var journey = journeys[i];
+                        var journeyStartKm = cumulativeDistance;
+                        var journeyEndKm = cumulativeDistance + journey.DistanceKm;
 
-                    <div class="journey-card @(isCompleted ? "completed" : "")">
+                        // Berechne Fortschritt für diese spezifische Reise
+                        var isCompleted = totalDistanceKm >= journeyEndKm;
+                        var isActive = totalDistanceKm >= journeyStartKm && totalDistanceKm < journeyEndKm;
+                        var isLocked = totalDistanceKm < journeyStartKm;
+
+                        double progressPercent = 0;
+                        double remainingKm = journey.DistanceKm;
+
+                        if (isCompleted)
+                        {
+                            progressPercent = 100;
+                            remainingKm = 0;
+                        }
+                        else if (isActive)
+                        {
+                            var progressInJourney = totalDistanceKm - journeyStartKm;
+                            progressPercent = (progressInJourney / journey.DistanceKm) * 100;
+                            remainingKm = journey.DistanceKm - progressInJourney;
+                        }
+
+                    <div class="journey-card @(isCompleted ? "completed" : "") @(isLocked ? "locked" : "")">
                         <div class="journey-header">
                             <div class="journey-emoji">@journey.Emoji</div>
                             <div class="journey-info">
@@ -65,41 +87,55 @@
                             {
                                 <div class="completed-badge">✓ Abgeschlossen</div>
                             }
+                            else if (isLocked)
+                            {
+                                <div class="locked-badge">🔒 Gesperrt</div>
+                            }
                         </div>
 
                         <div class="journey-distance">
                             <strong>@journey.DistanceKm km</strong>
                             <span class="journey-steps">≈ @journey.EstimatedSteps.ToString("N0") Schritte</span>
+                            @if (isLocked)
+                            {
+                                <p class="unlock-info">Schließe erst die vorherige Reise ab!</p>
+                            }
                         </div>
 
-                        <div class="progress-section">
-                            <div class="progress-bar-container">
-                                <div class="progress-bar" style="width: @progressPercent%"></div>
-                            </div>
-                            <div class="progress-info">
-                                @if (isCompleted)
-                                {
-                                    <span class="progress-complete">🎉 Ziel erreicht!</span>
-                                }
-                                else
-                                {
-                                    <span>@remainingKm km verbleibend</span>
-                                    <span>@((int)progressPercent)%</span>
-                                }
-                            </div>
-                        </div>
-
-                        @if (isCompleted)
+                        @if (!isLocked)
                         {
-                            <div class="completion-info">
-                                <p>🏆 Glückwunsch! Du hast diese Strecke geschafft!</p>
-                                @if (!string.IsNullOrEmpty(journey.FunFact))
-                                {
-                                    <p class="fun-fact">💡 <em>@journey.FunFact</em></p>
-                                }
+                            <div class="progress-section">
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: @progressPercent%"></div>
+                                </div>
+                                <div class="progress-info">
+                                    @if (isCompleted)
+                                    {
+                                        <span class="progress-complete">🎉 Ziel erreicht!</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@remainingKm.ToString("F1") km verbleibend</span>
+                                        <span>@((int)progressPercent)%</span>
+                                    }
+                                </div>
                             </div>
+
+                            @if (isCompleted)
+                            {
+                                <div class="completion-info">
+                                    <p>🏆 Glückwunsch! Du hast diese Strecke geschafft!</p>
+                                    @if (!string.IsNullOrEmpty(journey.FunFact))
+                                    {
+                                        <p class="fun-fact">💡 <em>@journey.FunFact</em></p>
+                                    }
+                                </div>
+                            }
                         }
                     </div>
+
+                    cumulativeDistance += journey.DistanceKm;
+                    }
                 }
             </div>
         </div>
@@ -113,12 +149,32 @@
             <p class="subtitle">Erreiche beeindruckende Schritt-Ziele!</p>
 
             <div class="milestones-grid">
-                @foreach (var milestone in milestones)
-                {
-                    var isAchieved = totalSteps >= milestone.RequiredSteps;
-                    var progressPercent = Math.Min((totalSteps / (double)milestone.RequiredSteps) * 100, 100);
+                @{
+                    int cumulativeSteps = 0;
+                    for (int i = 0; i < milestones.Count; i++)
+                    {
+                        var milestone = milestones[i];
+                        var milestoneStartSteps = cumulativeSteps;
+                        var milestoneEndSteps = milestone.RequiredSteps;
 
-                    <div class="milestone-card @(isAchieved ? "achieved" : "")">
+                        // Berechne Fortschritt für diesen spezifischen Meilenstein
+                        var isAchieved = totalSteps >= milestoneEndSteps;
+                        var isActive = totalSteps >= milestoneStartSteps && totalSteps < milestoneEndSteps;
+                        var isLocked = totalSteps < milestoneStartSteps;
+
+                        double progressPercent = 0;
+                        if (isAchieved)
+                        {
+                            progressPercent = 100;
+                        }
+                        else if (isActive)
+                        {
+                            var progressInMilestone = totalSteps - milestoneStartSteps;
+                            var stepsNeeded = milestoneEndSteps - milestoneStartSteps;
+                            progressPercent = (progressInMilestone / (double)stepsNeeded) * 100;
+                        }
+
+                    <div class="milestone-card @(isAchieved ? "achieved" : "") @(isLocked ? "locked" : "")">
                         <div class="milestone-icon">@milestone.Emoji</div>
                         <h3>@milestone.Title</h3>
                         <p class="milestone-description">@milestone.Description</p>
@@ -127,7 +183,12 @@
                             @milestone.RequiredSteps.ToString("N0") Schritte
                         </div>
 
-                        @if (isAchieved)
+                        @if (isLocked)
+                        {
+                            <div class="locked-badge">🔒 Gesperrt</div>
+                            <p class="unlock-info">Erreiche erst den vorherigen Meilenstein!</p>
+                        }
+                        else if (isAchieved)
                         {
                             <div class="achievement-badge">
                                 <span class="badge-icon">🏆</span>
@@ -147,6 +208,9 @@
                             </div>
                         }
                     </div>
+
+                    cumulativeSteps = milestone.RequiredSteps;
+                    }
                 }
             </div>
         </div>
@@ -169,24 +233,35 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadData();
+        // Initialize journeys and milestones FIRST
         InitializeJourneys();
         InitializeMilestones();
+
+        // Then load data (needs journeys to be initialized)
+        await LoadData();
     }
 
     private async Task LoadData()
     {
         try
         {
-            // Lade alle historischen Daten
+            // Lade alle historischen Daten (einschließlich heute)
             var allData = await Db.GetRecentAsync(365); // Letztes Jahr
+
+            // Summiere alle Schritte (inklusive heute)
             totalSteps = allData.Sum(d => d.Steps);
 
-            // Berechne Distanz (0.8m pro Schritt als Durchschnitt)
-            totalDistanceKm = Math.Round(totalSteps * 0.0008, 1);
+            // Lade Einstellungen für Schrittlänge
+            var settings = await Db.GetSettingsAsync();
+            var stepLength = settings?.StepLengthMeters ?? 0.8;
+
+            // Berechne Distanz mit Schrittlänge aus Einstellungen
+            totalDistanceKm = Math.Round(totalSteps * stepLength / 1000, 1);
 
             // Zähle abgeschlossene Reisen
             completedJourneys = journeys.Count(j => totalDistanceKm >= j.DistanceKm);
+
+            System.Diagnostics.Debug.WriteLine($"📊 Goals - Gesamtschritte: {totalSteps}, Distanz: {totalDistanceKm} km");
         }
         catch (Exception ex)
         {

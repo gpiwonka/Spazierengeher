@@ -8,7 +8,7 @@ namespace Spazierengeher.Data;
 public class DailySteps
 {
     [PrimaryKey]
-    public string DateKey { get; set; } // Format: yyyy-MM-dd
+    public DateTime DateKey { get; set; }
 
     public int Steps { get; set; }
 

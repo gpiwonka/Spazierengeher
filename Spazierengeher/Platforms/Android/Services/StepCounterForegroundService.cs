@@ -3,6 +3,7 @@ using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using AndroidX.Core.App;
+using Java.Lang;
 
 namespace Spazierengeher.Platforms.Android.Services;
 
@@ -24,7 +25,27 @@ public class StepCounterForegroundService : Service
         RegisterStepReceiver();
 
         System.Diagnostics.Debug.WriteLine("✅ ForegroundService gestartet (nur Notification)");
-        return StartCommandResult.Sticky;
+
+        // Return RedeliverIntent to restart service with same intent if killed
+        return StartCommandResult.RedeliverIntent;
+    }
+
+    public override void OnTaskRemoved(Intent rootIntent)
+    {
+        base.OnTaskRemoved(rootIntent);
+
+        // Restart service when app is removed from recent apps
+        var restartServiceIntent = new Intent(ApplicationContext, this.Class);
+        var restartServicePendingIntent = PendingIntent.GetService(
+            ApplicationContext, 1, restartServiceIntent,
+            PendingIntentFlags.OneShot | PendingIntentFlags.Immutable);
+
+        var alarmService = (AlarmManager)ApplicationContext.GetSystemService(AlarmService);
+        alarmService.Set(AlarmType.ElapsedRealtime,
+            SystemClock.ElapsedRealtime() + 1000,
+            restartServicePendingIntent);
+
+        System.Diagnostics.Debug.WriteLine("🔄 Service wird neu gestartet nach Task-Entfernung");
     }
 
     private void RegisterStepReceiver()
@@ -39,23 +60,29 @@ public class StepCounterForegroundService : Service
         var intent = PackageManager.GetLaunchIntentForPackage(PackageName);
         var pending = PendingIntent.GetActivity(this, 0, intent, PendingIntentFlags.Immutable);
 
+        var progressPercent = System.Math.Min((int)((steps / (double)_goal) * 100), 100);
+
         _notificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
-            .SetContentTitle("🚶 Schritte zählen...")
-            .SetContentText($"Heute: {steps:N0} Schritte")
+            .SetContentTitle("🚶 Spazierengeher")
+            .SetContentText($"Heute: {steps:N0} / {_goal:N0} Schritte ({progressPercent}%)")
             .SetSmallIcon(global::Android.Resource.Drawable.IcDialogInfo)
             .SetContentIntent(pending)
             .SetOngoing(true)
             .SetOnlyAlertOnce(true)
             .SetCategory(NotificationCompat.CategoryService)
-            .SetVisibility(NotificationCompat.VisibilityPublic);
+            .SetVisibility(NotificationCompat.VisibilityPublic)
+            .SetProgress(_goal, steps, false)
+            .SetShowWhen(false);
 
         return _notificationBuilder.Build();
     }
 
     public void UpdateNotification(int steps)
     {
+        var progressPercent = System.Math.Min((int)((steps / (double)_goal) * 100), 100);
+
         _notificationBuilder
-            .SetContentText($"Heute: {steps:N0} Schritte")
+            .SetContentText($"Heute: {steps:N0} / {_goal:N0} Schritte ({progressPercent}%)")
             .SetProgress(_goal, steps, false);
 
         var manager = (NotificationManager)GetSystemService(NotificationService);

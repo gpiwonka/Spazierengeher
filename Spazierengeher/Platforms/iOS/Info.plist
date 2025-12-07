@@ -2,31 +2,59 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>LSRequiresIPhoneOS</key>
-    <true/>
-    <key>UIDeviceFamily</key>
+    <!-- App Name und Identifier -->
+    <key>CFBundleDisplayName</key>
+    <string>Spazierengeher</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.georgpiwonka.spazierengeher</string>
+    <key>CFBundleVersion</key>
+    <string>1.0</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+
+    <!-- Motion & Fitness Permission -->
+    <key>NSMotionUsageDescription</key>
+    <string>Spazierengeher benötigt Zugriff auf deine Bewegungsdaten, um deine Schritte zu zählen und deine täglichen Ziele zu verfolgen.</string>
+
+    <!-- Background Modes für kontinuierliche Schrittzählung -->
+    <key>UIBackgroundModes</key>
     <array>
-        <integer>1</integer>
-        <integer>2</integer>
+        <string>fetch</string>
+        <string>processing</string>
     </array>
-    <key>UIRequiredDeviceCapabilities</key>
-    <array>
-        <string>arm64</string>
-    </array>
+
+    <!-- Unterstützte Geräte-Orientierungen -->
     <key>UISupportedInterfaceOrientations</key>
     <array>
         <string>UIInterfaceOrientationPortrait</string>
         <string>UIInterfaceOrientationLandscapeLeft</string>
         <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
-    <key>UISupportedInterfaceOrientations~ipad</key>
+
+    <!-- Dark Mode Support -->
+    <key>UIUserInterfaceStyle</key>
+    <string>Automatic</string>
+
+    <!-- Minimum iOS Version -->
+    <key>MinimumOSVersion</key>
+    <string>14.0</string>
+
+    <!-- Launch Screen -->
+    <key>UILaunchStoryboardName</key>
+    <string>LaunchScreen</string>
+
+    <!-- Status Bar Style -->
+    <key>UIStatusBarStyle</key>
+    <string>UIStatusBarStyleDefault</string>
+
+    <!-- Hauptstoryboard (für MAUI nicht verwendet) -->
+    <key>UIMainStoryboardFile</key>
+    <string></string>
+
+    <!-- Device Capabilities -->
+    <key>UIRequiredDeviceCapabilities</key>
     <array>
-        <string>UIInterfaceOrientationPortrait</string>
-        <string>UIInterfaceOrientationPortraitUpsideDown</string>
-        <string>UIInterfaceOrientationLandscapeLeft</string>
-        <string>UIInterfaceOrientationLandscapeRight</string>
+        <string>arm64</string>
     </array>
-    <key>XSAppIconAssets</key>
-    <string>Assets.xcassets/appicon.appiconset</string>
 </dict>
 </plist>

@@ -6,6 +6,14 @@
 
 main {
     flex: 1;
+    padding-top: 24px; /* Add padding for Android status bar on mobile */
+}
+
+/* Remove extra padding on desktop */
+@media (min-width: 641px) {
+    main {
+        padding-top: 0;
+    }
 }
 
 .sidebar {

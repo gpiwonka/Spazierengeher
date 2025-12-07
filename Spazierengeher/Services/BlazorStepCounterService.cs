@@ -16,9 +16,12 @@ public class BlazorStepCounterService
     private int _initialStepsToday;
     private UserSettings _settings;
     private Timer _autoSaveTimer;
+    private DateTime _currentTrackingDate;
+    private int _stepsSinceStartTracking; // Schritte vom Sensor seit Start
 
     public event EventHandler<int> OnStepCountChanged;
 
+    private readonly Task _initializationTask;
     public int CurrentSteps => _currentSteps;
     public bool IsTracking { get; private set; }
     public UserSettings Settings => _settings;
@@ -30,29 +33,52 @@ public class BlazorStepCounterService
         _stepCounterService.StepCountChanged += HandleStepCountChanged;
 
         // Initialisierung - lädt Einstellungen und heutige Schritte
-        _ = InitializeAsync();
+        _initializationTask = InitializeAsync();
     }
 
     private async Task InitializeAsync()
     {
         _settings = await _database.GetSettingsAsync();
+        _currentTrackingDate = DateTime.Today;
         _initialStepsToday = await _database.GetStepsAsync(DailyStepsDb.TodayKey);
         _currentSteps = _initialStepsToday;
     }
 
-    private void HandleStepCountChanged(object sender, int stepCount)
+    private async void HandleStepCountChanged(object sender, int stepCount)
     {
-        // Kombiniere neue Schritte mit bereits gespeicherten
-        _currentSteps = _initialStepsToday + stepCount;
+        // Prüfe ob Tag gewechselt hat
+        var today = DateTime.Today;
+        if (today != _currentTrackingDate)
+        {
+            System.Diagnostics.Debug.WriteLine($"🔄 Tag gewechselt: {_currentTrackingDate:yyyy-MM-dd} -> {today:yyyy-MM-dd}");
+
+            // Speichere die Schritte des vorherigen Tags
+            await _database.UpsertStepsAsync(_currentTrackingDate, _currentSteps);
+
+            // Reset für neuen Tag
+            _currentTrackingDate = today;
+            _initialStepsToday = await _database.GetStepsAsync(DailyStepsDb.TodayKey);
+            _stepsSinceStartTracking = stepCount; // Aktueller Sensorwert wird Basis für neuen Tag
+            _currentSteps = _initialStepsToday; // Start mit DB-Wert (sollte 0 sein für neuen Tag)
+
+            System.Diagnostics.Debug.WriteLine($"✅ Neuer Tag initialisiert. Steps: {_currentSteps}");
+        }
+        else
+        {
+            // Normaler Fall: Kombiniere neue Schritte mit bereits gespeicherten
+            // stepCount ist absolut vom Sensor, daher berechnen wir die Differenz
+            var stepsSinceLastReset = stepCount - _stepsSinceStartTracking;
+            _currentSteps = _initialStepsToday + stepsSinceLastReset;
+        }
 
         // Event auf dem Main-Thread auslösen für Blazor
         MainThread.BeginInvokeOnMainThread(() =>
         {
             OnStepCountChanged?.Invoke(this, _currentSteps);
-
-            // Automatisch in DB speichern (asynchron ohne await)
-            _ = SaveCurrentStepsAsync();
         });
+
+        // Automatisch in DB speichern (asynchron ohne await)
+        _ = SaveCurrentStepsAsync();
     }
 
     public async Task<bool> CheckAndRequestPermissionAsync()
@@ -69,6 +95,7 @@ public class BlazorStepCounterService
     {
         try
         {
+            await _initializationTask;
             var hasPermission = await CheckAndRequestPermissionAsync();
             if (!hasPermission)
             {
@@ -76,6 +103,7 @@ public class BlazorStepCounterService
             }
 
             // Lade bereits heute gezählte Schritte
+            _currentTrackingDate = DateTime.Today;
             _initialStepsToday = await _database.GetStepsAsync(DailyStepsDb.TodayKey);
             _currentSteps = _initialStepsToday;
 
@@ -83,6 +111,9 @@ public class BlazorStepCounterService
             System.Diagnostics.Debug.WriteLine("🔷 Starte IStepCounterService...");
             await _stepCounterService.StartCountingAsync();
             System.Diagnostics.Debug.WriteLine("✅ IStepCounterService gestartet");
+
+            // Hole aktuellen Sensorwert als Basis
+            _stepsSinceStartTracking = await _stepCounterService.GetStepCountAsync();
 
             IsTracking = true;
 
@@ -108,6 +139,7 @@ public class BlazorStepCounterService
     {
         try
         {
+            await _initializationTask;
             System.Diagnostics.Debug.WriteLine("🔷 Stoppe IStepCounterService...");
             await _stepCounterService.StopCountingAsync();
             System.Diagnostics.Debug.WriteLine("✅ IStepCounterService gestoppt");
@@ -142,7 +174,8 @@ public class BlazorStepCounterService
     {
         try
         {
-            await _database.UpsertStepsAsync(DailyStepsDb.TodayKey, _currentSteps);
+            // Speichere für den aktuellen Tracking-Tag
+            await _database.UpsertStepsAsync(_currentTrackingDate, _currentSteps);
         }
         catch (Exception ex)
         {

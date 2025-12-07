@@ -59,9 +59,9 @@
     <!-- Statistiken -->
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-icon">🔥</div>
-            <div class="stat-value">@calories.ToString("F0")</div>
-            <div class="stat-label">Kalorien</div>
+            <div class="stat-icon">🎯</div>
+            <div class="stat-value">@nextGoal</div>
+            <div class="stat-label">Nächstes Ziel</div>
         </div>
         <div class="stat-card">
             <div class="stat-icon">📏</div>
@@ -113,12 +113,12 @@
 @code {
     private int today = 0;
     private int goal = 10000;
-    private double progress => goal == 0 ? 0 : Math.Min(1.0, (double)today / goal);
+    private double progress = 0.0;
     private bool isTracking = false;
     private bool isSaving = false;
     private bool goalSaved = false;
     private string errorMessage = string.Empty;
-    private double calories = 0;
+    private int nextGoal = 0;
     private double distance = 0;
     private int activeTime = 0;
 
@@ -145,6 +145,7 @@
             {
                 await AutoStartTracking();
             }
+            UpdateProgress();
         }
         catch (Exception ex)
         {
@@ -192,14 +193,33 @@
 
     private void UpdateDisplayValues()
     {
-        calories = StepCounterService.GetEstimatedCalories();
+        nextGoal = CalculateNextGoal(today);
         distance = StepCounterService.GetEstimatedDistanceKm();
+
+        UpdateProgress();
 
         // Berechne aktive Zeit (sehr grobe Schätzung: ~100 Schritte/Minute)
         if (today > 0)
         {
             activeTime = today / 100;
         }
+    }
+
+    private int CalculateNextGoal(int currentSteps)
+    {
+        // Milestones: 2500, 5000, 7500, 10000, 12500, 15000, 20000, 25000, 30000...
+        int[] milestones = { 2500, 5000, 7500, 10000, 12500, 15000, 20000, 25000, 30000, 40000, 50000 };
+
+        foreach (var milestone in milestones)
+        {
+            if (currentSteps < milestone)
+            {
+                return milestone;
+            }
+        }
+
+        // If beyond all predefined milestones, round up to next 10000
+        return ((currentSteps / 10000) + 1) * 10000;
     }
 
     private async Task SaveGoal()
@@ -226,6 +246,7 @@
             // Erfolgs-Nachricht nach 3 Sekunden ausblenden
             await Task.Delay(3000);
             goalSaved = false;
+            UpdateProgress();
             StateHasChanged();
         }
         catch (Exception ex)
@@ -236,6 +257,18 @@
         {
             isSaving = false;
             StateHasChanged();
+        }
+    }
+
+    private void UpdateProgress()
+    {
+        if (goal > 0)
+        {
+            progress = Math.Min(1.0, (double)today / goal);
+        }
+        else
+        {
+            progress = 0.0;
         }
     }
 

@@ -3,6 +3,8 @@ using Spazierengeher.BlazorServices;
 using Spazierengeher.Data;
 #if ANDROID
 using Spazierengeher.Platforms.Android.Services;
+#elif IOS
+using Spazierengeher.Platforms.iOS.Services;
 #endif
 using Spazierengeher.Services;
 
@@ -22,23 +24,29 @@ namespace Spazierengeher
 
             builder.Services.AddMauiBlazorWebView();
 
+            builder.Services.AddSingleton<IThemeService, ThemeService>();
+
 #if DEBUG
-    		builder.Services.AddBlazorWebViewDeveloperTools();
+            builder.Services.AddBlazorWebViewDeveloperTools();
     		builder.Logging.AddDebug();
 #endif
 
 #if ANDROID
             builder.Services.AddSingleton<IStepCounterService, Platforms.Android.Services.StepCounterService>();
-        //    builder.Services.AddSingleton<IBackgroundTrackingService, AndroidBackgroundTrackingService>();
+            //    builder.Services.AddSingleton<IBackgroundTrackingService, AndroidBackgroundTrackingService>();
 
+#elif IOS
+            builder.Services.AddSingleton<IStepCounterService, Platforms.iOS.Services.StepCounterService>();
+            builder.Services.AddSingleton<IBackgroundTrackingService, iOSBackgroundTrackingService>();
+            
 #else
-builder.Services.AddSingleton<IStepCounterService, DummyStepCounterService>();
+            builder.Services.AddSingleton<IStepCounterService, DummyStepCounterService>();
+            
 #endif
-
             builder.Services.AddSingleton<BlazorStepCounterService>();
             builder.Services.AddSingleton<DailyStepsDb>();
             builder.Services.AddTransient<MainPage>();
-
+            
             return builder.Build();
         }
     }
